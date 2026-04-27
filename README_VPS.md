@@ -1,36 +1,35 @@
-# 🚀 Panduan Instalasi VPS v2.0 (Ubuntu 22.04 / 24.04)
-**Domain: feepay.web.id | RAM: 1GB**
+# 🚀 Panduan Instalasi VPS Ultimate (Ubuntu 22.04 / 24.04)
+**Target: feepay.web.id | RAM: 1GB**
 
-Panduan ini sudah diperbarui untuk setup domain otomatis dan database.
-
----
-
-## **1. Persiapan DNS (WAJIB)**
-Sebelum mulai, pastikan di Panel Domain Anda (DomaiNesia):
-*   **A Record** (@) arahkan ke IP VPS: `202.155.95.73`
-*   **A Record** (www) arahkan ke IP VPS: `202.155.95.73`
+Ikuti langkah-langkah di bawah ini secara berurutan untuk hasil 100% sukses.
 
 ---
 
-## **2. Instalasi Cepat**
-Login ke VPS dan jalankan perintah ini:
+## **Langkah 1: Persiapan DNS (Wajib Sebelum Deploy)**
+Login ke panel domain Anda (DomaiNesia) dan atur **DNS Management**:
+1.  **A Record** (`@`) -> IP VPS: `202.155.95.73`
+2.  **A Record** (`www`) -> IP VPS: `202.155.95.73`
+3.  Simpan dan tunggu 2 menit.
+
+---
+
+## **Langkah 2: Eksekusi Instalasi Otomatis**
+Login ke VPS via SSH, lalu jalankan perintah gabungan ini:
 ```bash
-git clone https://github.com/fetrusmeilanoilhamsyah/botnokos.git
-cd botnokos
-chmod +x deploy.sh
-./deploy.sh
+git clone https://github.com/fetrusmeilanoilhamsyah/botnokos.git && cd botnokos && chmod +x deploy.sh && ./deploy.sh
 ```
+*Script ini akan menginstal Node, Postgres, Redis, Nginx, dan membuat database otomatis.*
 
 ---
 
-## **3. Konfigurasi Domain & SSL (HTTPS)**
-Agar domain `feepay.web.id` aktif, jalankan ini:
+## **Langkah 3: Konfigurasi Domain & SSL (HTTPS)**
+Agar link `feepay.web.id` aktif dan aman (HTTPS):
 
-1. **Buat Config Nginx:**
+1. **Buat file konfigurasi Nginx:**
    ```bash
    nano /etc/nginx/sites-available/feepay
    ```
-2. **Copy & Paste isi ini:**
+2. **Copy & Paste kode ini (Ubah nama domain jika berbeda):**
    ```nginx
    server {
        listen 80;
@@ -45,7 +44,7 @@ Agar domain `feepay.web.id` aktif, jalankan ini:
        }
    }
    ```
-3. **Aktifkan & Pasang SSL:**
+3. **Aktifkan & Pasang SSL Gratis:**
    ```bash
    ln -s /etc/nginx/sites-available/feepay /etc/nginx/sites-enabled/
    rm /etc/nginx/sites-enabled/default
@@ -55,26 +54,37 @@ Agar domain `feepay.web.id` aktif, jalankan ini:
 
 ---
 
-## **4. Pengisian API Key**
-Edit file `.env` Anda:
-```bash
-nano .env
-```
-Isi bagian penting ini:
-*   `DATABASE_URL=postgresql://botuser:BotPass123!@localhost:5432/otp_bot`
-*   `TELEGRAM_BOT_TOKEN=...`
-*   `MIDTRANS_SERVER_KEY=...`
-*   `MIDTRANS_NOTIFICATION_URL=https://feepay.web.id/webhook/midtrans`
-*   `OTP_API_KEY=...`
+## **Langkah 4: Setup API Keys & Webhook**
+1. **Buka file .env:**
+   ```bash
+   nano .env
+   ```
+2. **Isi variabel berikut (Penting!):**
+   *   `TELEGRAM_BOT_TOKEN`: Token dari @BotFather.
+   *   `MIDTRANS_SERVER_KEY`: Server Key Production dari Midtrans.
+   *   `MIDTRANS_NOTIFICATION_URL`: `https://feepay.web.id/webhook/midtrans`
+   *   `OTP_API_KEY`: API Key dari JasaOTP.
+3. **Simpan (CTRL+O, Enter, CTRL+X) dan Restart Bot:**
+   ```bash
+   pm2 restart bot-otp
+   ```
 
 ---
 
-## **5. Perintah Berguna (Maintenance)**
-*   **Cek Log Bot:** `pm2 logs bot-otp`
-*   **Restart Bot:** `pm2 restart bot-otp`
-*   **Cek Database:** `sudo -u postgres psql -d otp_bot`
-*   **Update Code:** `git pull origin main && pm2 restart bot-otp`
+## **Langkah 5: Dashboard Midtrans (Production)**
+Login ke Dashboard Midtrans Anda:
+1.  Buka **Settings > Configuration**.
+2.  **Payment Notification URL**: `https://feepay.web.id/webhook/midtrans`
+3.  **Finish Redirect URL**: `https://t.me/NAMA_BOT_ANDA`
+4.  Klik **Update/Save**.
 
 ---
-**Status Bot:** `https://feepay.web.id` 🚀🔥
+
+## **🚀 Perintah Maintenance (Hafalkan Ini)**
+*   `pm2 logs bot-otp` (Melihat aktivitas/error bot).
+*   `pm2 restart bot-otp` (Restart bot setelah ganti .env).
+*   `git pull origin main && pm2 restart bot-otp` (Update kode terbaru).
+
+---
+**Bot Anda sekarang aktif di: https://feepay.web.id** 💎🚀
 ```
