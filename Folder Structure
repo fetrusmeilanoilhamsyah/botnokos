@@ -1,0 +1,117 @@
+# 📁 Bot Jasa OTP Telegram - Folder Structure
+
+```
+otp-telegram-bot/
+│
+├── src/
+│   ├── config/
+│   │   ├── database.js          # PostgreSQL connection pool
+│   │   ├── redis.js             # Redis client setup
+│   │   ├── midtrans.js          # Midtrans configuration
+│   │   └── constants.js         # App constants & enums
+│   │
+│   ├── database/
+│   │   ├── migrations/
+│   │   │   └── init.sql         # Initial database schema
+│   │   ├── queries/
+│   │   │   ├── users.js         # User-related queries
+│   │   │   ├── transactions.js  # Transaction queries
+│   │   │   └── orders.js        # Order queries
+│   │   └── index.js             # Database query aggregator
+│   │
+│   ├── middlewares/
+│   │   ├── auth.js              # User authentication & verification
+│   │   ├── rateLimiter.js       # Rate limiting (Redis-based)
+│   │   ├── errorHandler.js      # Global error handler
+│   │   ├── logger.js            # Request/response logger
+│   │   └── validation.js        # Input validation middleware
+│   │
+│   ├── scenes/
+│   │   ├── start.scene.js       # /start command & registration
+│   │   ├── topup.scene.js       # Top-up balance flow
+│   │   ├── order.scene.js       # Order OTP flow (multi-step)
+│   │   ├── history.scene.js     # Order history & details
+│   │   ├── profile.scene.js     # User profile & settings
+│   │   └── index.js             # Scene aggregator
+│   │
+│   ├── controllers/
+│   │   ├── user.controller.js   # User management logic
+│   │   ├── order.controller.js  # OTP order management
+│   │   ├── payment.controller.js # Midtrans payment handling
+│   │   └── webhook.controller.js # Webhook handlers
+│   │
+│   ├── services/
+│   │   ├── otp.service.js       # OTP API integration
+│   │   ├── payment.service.js   # Midtrans payment service
+│   │   ├── user.service.js      # User business logic
+│   │   ├── order.service.js     # Order business logic
+│   │   ├── cache.service.js     # Redis caching service
+│   │   └── notification.service.js # Telegram notifications
+│   │
+│   ├── utils/
+│   │   ├── logger.js            # Winston logger setup
+│   │   ├── formatter.js         # Message formatters
+│   │   ├── validator.js         # Input validators
+│   │   ├── encryption.js        # Data encryption utilities
+│   │   └── helpers.js           # General helper functions
+│   │
+│   ├── keyboards/
+│   │   ├── main.keyboard.js     # Main menu keyboard
+│   │   ├── order.keyboard.js    # Order flow keyboards
+│   │   ├── payment.keyboard.js  # Payment keyboards
+│   │   └── inline.keyboard.js   # Inline keyboards
+│   │
+│   ├── app.js                   # Telegraf bot initialization
+│   └── server.js                # Express server for webhooks
+│
+├── .env.example                 # Environment variables template
+├── .gitignore                   # Git ignore file
+├── package.json                 # Dependencies
+├── ecosystem.config.js          # PM2 configuration
+└── README.md                    # Documentation
+
+```
+
+## 📋 Penjelasan Struktur
+
+### **config/**
+Konfigurasi koneksi database, Redis, dan third-party services. Singleton pattern untuk efisiensi memory.
+
+### **database/**
+- `migrations/`: SQL schema files
+- `queries/`: Prepared statements untuk menghindari SQL injection
+- Menggunakan parameterized queries untuk keamanan
+
+### **middlewares/**
+- Rate limiting berbasis Redis untuk mencegah abuse
+- Authentication check untuk setiap user action
+- Error handler global untuk logging & user-friendly messages
+
+### **scenes/**
+Telegram bot conversation flows menggunakan Telegraf Scenes:
+- Multi-step wizards untuk order process
+- State management untuk conversation context
+- Memory-efficient dengan session cleanup
+
+### **controllers/**
+Business logic layer yang tipis, delegasi ke services.
+
+### **services/**
+Core business logic:
+- OTP API calls dengan error handling & retry mechanism
+- Payment processing dengan idempotency
+- Caching strategy untuk mengurangi DB calls
+
+### **utils/**
+Helper functions & utilities untuk reusability.
+
+### **keyboards/**
+Reusable keyboard layouts untuk consistency.
+
+## 🎯 Best Practices yang Diterapkan
+
+1. **Separation of Concerns**: Setiap layer punya tanggung jawab jelas
+2. **Memory Efficiency**: Connection pooling, lazy loading, cache strategy
+3. **Security**: Input validation, prepared statements, rate limiting
+4. **Scalability**: Modular design, easy to extend
+5. **Maintainability**: Clear naming, single responsibility principle

@@ -1,0 +1,190 @@
+# ============================================================
+# Bot Jasa OTP Telegram - Git Ignore Configuration
+# ============================================================
+
+# ============================================================
+# ENVIRONMENT & SECRETS (CRITICAL - NEVER COMMIT!)
+# ============================================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*.pem
+*.key
+*.cert
+
+# API Keys & Credentials
+secrets/
+credentials/
+config/secrets.js
+
+# ============================================================
+# NODE.JS
+# ============================================================
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+out/
+
+# ============================================================
+# LOGS
+# ============================================================
+logs/
+*.log
+combined.log
+error.log
+exceptions.log
+rejections.log
+pm2-*.log
+
+# ============================================================
+# DATABASES
+# ============================================================
+# Database dumps & backups
+*.sql
+*.dump
+*.backup
+backups/
+dumps/
+
+# SQLite files (if using for testing)
+*.sqlite
+*.sqlite3
+*.db
+
+# ============================================================
+# REDIS
+# ============================================================
+dump.rdb
+appendonly.aof
+redis-*.rdb
+
+# ============================================================
+# TEMPORARY FILES
+# ============================================================
+tmp/
+temp/
+*.tmp
+*.temp
+.cache/
+.temp/
+
+# ============================================================
+# OPERATING SYSTEM
+# ============================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ============================================================
+# IDEs & EDITORS
+# ============================================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ============================================================
+# TESTING & COVERAGE
+# ============================================================
+coverage/
+*.coverage
+.nyc_output/
+junit.xml
+test-results/
+
+# ============================================================
+# PM2
+# ============================================================
+.pm2/
+pm2-*.log
+
+# ============================================================
+# UPLOADS & MEDIA (if storing locally)
+# ============================================================
+uploads/
+media/
+images/
+files/
+
+# ============================================================
+# CERTIFICATES & SSL
+# ============================================================
+*.pem
+*.crt
+*.csr
+ssl/
+certificates/
+
+# ============================================================
+# DOCUMENTATION BUILD
+# ============================================================
+docs/_build/
+docs/.doctrees/
+
+# ============================================================
+# MISC
+# ============================================================
+.sass-cache/
+*.pid
+*.seed
+*.pid.lock
+.npm
+.eslintcache
+.parcel-cache/
+.next/
+.nuxt/
+.cache/
+.vuepress/dist
+.serverless/
+.fusebox/
+
+# ============================================================
+# KEEP THESE FILES (Override .gitignore)
+# ============================================================
+!.env.example
+!.gitkeep
+!README.md
+!LICENSE
