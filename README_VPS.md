@@ -1,86 +1,80 @@
-# 🚀 Panduan Instalasi VPS (Ubuntu 22.04 / 24.04)
-**Optimasi Khusus VPS RAM 1GB**
+# 🚀 Panduan Instalasi VPS v2.0 (Ubuntu 22.04 / 24.04)
+**Domain: feepay.web.id | RAM: 1GB**
 
-Panduan ini akan membimbing Anda menginstal Bot Jasa OTP dari nol sampai jalan 24 jam.
+Panduan ini sudah diperbarui untuk setup domain otomatis dan database.
 
 ---
 
-## **1. Persiapan Awal**
-Login ke VPS Anda via SSH (Gunakan Termius, PuTTY, atau Terminal):
-```bash
-ssh root@IP_VPS_ANDA
-```
+## **1. Persiapan DNS (WAJIB)**
+Sebelum mulai, pastikan di Panel Domain Anda (DomaiNesia):
+*   **A Record** (@) arahkan ke IP VPS: `202.155.95.73`
+*   **A Record** (www) arahkan ke IP VPS: `202.155.95.73`
 
-## **2. Clone Project**
-Masuk ke folder yang diinginkan dan clone repository Anda:
+---
+
+## **2. Instalasi Cepat**
+Login ke VPS dan jalankan perintah ini:
 ```bash
 git clone https://github.com/fetrusmeilanoilhamsyah/botnokos.git
 cd botnokos
-```
-
-## **3. Jalankan Auto-Deploy**
-Saya sudah buatkan script sakti agar Anda tidak perlu mengetik perintah satu per satu.
-```bash
-# Beri izin eksekusi
 chmod +x deploy.sh
-
-# Jalankan script (Tunggu 3-5 menit)
 ./deploy.sh
 ```
 
 ---
 
-## **4. Konfigurasi Database & Env**
-Setelah instalasi selesai, Anda **WAJIB** mengisi kredensial di file `.env`.
+## **3. Konfigurasi Domain & SSL (HTTPS)**
+Agar domain `feepay.web.id` aktif, jalankan ini:
 
-1. Buat file .env dari example (jika belum ada):
+1. **Buat Config Nginx:**
    ```bash
-   cp .env.example .env
+   nano /etc/nginx/sites-available/feepay
    ```
-2. Edit file `.env`:
+2. **Copy & Paste isi ini:**
+   ```nginx
+   server {
+       listen 80;
+       server_name feepay.web.id www.feepay.web.id;
+       location / {
+           proxy_pass http://localhost:3000;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection 'upgrade';
+           proxy_set_header Host $host;
+           proxy_cache_bypass $http_upgrade;
+       }
+   }
+   ```
+3. **Aktifkan & Pasang SSL:**
    ```bash
-   nano .env
+   ln -s /etc/nginx/sites-available/feepay /etc/nginx/sites-enabled/
+   rm /etc/nginx/sites-enabled/default
+   nginx -t && systemctl restart nginx
+   certbot --nginx -d feepay.web.id -d www.feepay.web.id
    ```
-3. Sesuaikan bagian database (Gunakan user yang dibuat script deploy):
-   ```env
-   DATABASE_URL=postgresql://botuser:BotPass123!@localhost:5432/otp_bot
-   ```
-4. Masukkan **TELEGRAM_BOT_TOKEN**, **MIDTRANS_SERVER_KEY**, dan **OTP_API_KEY**.
-5. Simpan (Tekan `CTRL+O`, lalu `ENTER`, lalu `CTRL+X`).
 
 ---
 
-## **5. Inisialisasi Database**
-Jalankan perintah ini untuk membuat tabel-tabel awal:
+## **4. Pengisian API Key**
+Edit file `.env` Anda:
 ```bash
-psql postgresql://botuser:BotPass123!@localhost:5432/otp_bot -f src/database/migrations/init.sql
+nano .env
 ```
+Isi bagian penting ini:
+*   `DATABASE_URL=postgresql://botuser:BotPass123!@localhost:5432/otp_bot`
+*   `TELEGRAM_BOT_TOKEN=...`
+*   `MIDTRANS_SERVER_KEY=...`
+*   `MIDTRANS_NOTIFICATION_URL=https://feepay.web.id/webhook/midtrans`
+*   `OTP_API_KEY=...`
 
 ---
 
-## **6. Menjalankan Bot (24 Jam Nonstop)**
-Gunakan PM2 agar bot tetap jalan meskipun SSH ditutup:
-```bash
-# Restart agar membaca .env terbaru
-pm2 restart bot-otp
-
-# Cek apakah sudah jalan (Status harus 'online')
-pm2 status
-
-# Melihat log aktivitas (Sangat berguna untuk debug)
-pm2 logs bot-otp
-```
+## **5. Perintah Berguna (Maintenance)**
+*   **Cek Log Bot:** `pm2 logs bot-otp`
+*   **Restart Bot:** `pm2 restart bot-otp`
+*   **Cek Database:** `sudo -u postgres psql -d otp_bot`
+*   **Update Code:** `git pull origin main && pm2 restart bot-otp`
 
 ---
-
-## **💡 Tips Untuk RAM 1GB**
-1. **Swap File:** Script `deploy.sh` sudah otomatis membuat Swap 2GB. Ini adalah "RAM Bayangan" agar VPS tidak macet saat beban tinggi.
-2. **Memory Limit:** Bot dijalankan dengan limit 768MB agar sistem operasi VPS tetap punya sisa RAM untuk bernapas.
-3. **Database Maintenance:** Jangan lupa backup berkala dengan perintah:
-   ```bash
-   pg_dump -U botuser otp_bot > backup.sql
-   ```
-
----
-**Bot Anda sekarang sudah online!** 💎🚀
+**Status Bot:** `https://feepay.web.id` 🚀🔥
 ```

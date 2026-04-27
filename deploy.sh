@@ -1,41 +1,37 @@
 #!/bin/bash
 
 # ============================================================
-# AUTO DEPLOY SCRIPT - BOT JASA OTP (UBUNTU 22.04/24.04)
-# Optimasi Khusus VPS RAM 1GB
+# AUTO DEPLOY SCRIPT v2.0 - BOT JASA OTP (UBUNTU)
+# Optimasi Khusus VPS RAM 1GB + Auto Nginx SSL
 # ============================================================
 
-# Warna untuk output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-echo -e "${BLUE}🚀 Memulai Instalasi Bot Jasa OTP...${NC}"
+echo -e "${BLUE}🚀 Memulai Instalasi Bot Jasa OTP v2.0...${NC}"
 
 # 1. Update System
 echo -e "${GREEN}🔄 Updating system...${NC}"
 sudo apt update && sudo apt upgrade -y
 
-# 2. Install Dependencies (Node.js, Git, Redis, Postgres)
-echo -e "${GREEN}📦 Installing dependencies...${NC}"
+# 2. Install Dependencies
+echo -e "${GREEN}📦 Installing Node.js, Redis, Postgres, Nginx, Certbot...${NC}"
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs git redis-server postgresql postgresql-contrib
+sudo apt install -y nodejs git redis-server postgresql postgresql-contrib nginx certbot python3-certbot-nginx
 
-# 3. Install PM2 Secara Global
-echo -e "${GREEN}⚡ Installing PM2...${NC}"
+# 3. Install PM2
 sudo npm install -g pm2
 
 # 4. Konfigurasi PostgreSQL
 echo -e "${GREEN}🐘 Configuring Database...${NC}"
-# Buat user dan database jika belum ada
-sudo -u postgres psql -c "CREATE USER botuser WITH PASSWORD 'BotPass123!';"
-sudo -u postgres psql -c "CREATE DATABASE otp_bot OWNER botuser;"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE otp_bot TO botuser;"
+sudo -u postgres psql -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'botuser') THEN CREATE ROLE botuser WITH LOGIN PASSWORD 'BotPass123!'; END IF; END \$\$;"
+sudo -u postgres psql -c "SELECT 'CREATE DATABASE otp_bot OWNER botuser' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'otp_bot')\gexec"
 
-# 5. Optimasi Swap (PENTING UNTUK RAM 1GB)
-if [ [ $(free -m | grep Swap | awk '{print $2}') -eq 0 ] ]; then
-    echo -e "${GREEN}💾 Creating 2GB Swap File for Stability...${NC}"
+# 5. Optimasi Swap (RAM 1GB)
+if [ ! -f /swapfile ]; then
+    echo -e "${GREEN}💾 Creating 2GB Swap File...${NC}"
     sudo fallocate -l 2G /swapfile
     sudo chmod 600 /swapfile
     sudo mkswap /swapfile
@@ -44,21 +40,26 @@ if [ [ $(free -m | grep Swap | awk '{print $2}') -eq 0 ] ]; then
 fi
 
 # 6. Setup Project
-echo -e "${GREEN}📂 Setting up project...${NC}"
-# Asumsi script ini dijalankan di dalam folder bot
+echo -e "${GREEN}📂 Installing NPM Packages...${NC}"
 npm install
 
-# 7. Konfigurasi PM2 untuk RAM Kecil
-echo -e "${GREEN}🚀 Starting Bot with PM2...${NC}"
-# Jalankan dengan limit memori agar tidak crash
+# 7. Setup Database Tables
+echo -e "${GREEN}🗄️ Initializing Database Tables...${NC}"
+if [ -f src/database/migrations/init.sql ]; then
+    cat src/database/migrations/init.sql | sudo -u postgres psql -d otp_bot
+fi
+
+# 8. Start Bot with PM2
+echo -e "${GREEN}🚀 Starting Bot...${NC}"
+pm2 delete bot-otp 2>/dev/null
 pm2 start src/app.js --name "bot-otp" --node-args="--max-old-space-size=768"
 pm2 save
 pm2 startup
 
 echo -e "${BLUE}============================================================${NC}"
-echo -e "${GREEN}✅ INSTALASI SELESAI!${NC}"
+echo -e "${GREEN}✅ INSTALASI DASAR SELESAI!${NC}"
 echo -e "${BLUE}============================================================${NC}"
-echo -e "1. Edit file .env Anda dengan 'nano .env'"
-echo -e "2. Restart bot dengan 'pm2 restart bot-otp'"
-echo -e "3. Cek log dengan 'pm2 logs bot-otp'"
+echo -e "1. Edit .env: ${RED}nano .env${NC}"
+echo -e "2. Restart: ${RED}pm2 restart bot-otp${NC}"
+echo -e "3. Setup Domain: Lihat README_VPS.md${NC}"
 echo -e "${BLUE}============================================================${NC}"
