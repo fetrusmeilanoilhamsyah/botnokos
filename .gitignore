@@ -53,6 +53,7 @@ pm2-*.log
 # ============================================================
 # Database dumps & backups
 *.sql
+!src/database/migrations/init.sql
 *.dump
 *.backup
 backups/
