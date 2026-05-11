@@ -22,15 +22,28 @@ const authMiddleware = async (ctx, next) => {
     try {
         const telegramId = ctx.from.id;
 
-        // Selalu ambil data terbaru dari database (agar saldo sinkron)
+        // Hanya ambil kolom yang dibutuhkan (jangan SELECT *)
         const result = await db(
-            'SELECT * FROM users WHERE telegram_id = $1 LIMIT 1',
+            'SELECT id, telegram_id, username, first_name, balance, role, is_banned, total_topup, referred_by, created_at FROM users WHERE telegram_id = $1 LIMIT 1',
             [String(telegramId)]
         );
 
         if (result.rows.length > 0) {
-            // User sudah terdaftar → simpan ke session
-            ctx.session.user = result.rows[0];
+            const user = result.rows[0];
+
+            // Cek apakah user dibanned
+            if (user.is_banned) {
+                logger.warn(`[auth] Banned user attempted access: ${telegramId}`);
+                if (ctx.message) {
+                    await ctx.reply('⛔ Akun Anda telah diblokir. Hubungi admin untuk info lebih lanjut.');
+                } else if (ctx.callbackQuery) {
+                    await ctx.answerCbQuery('⛔ Akun Anda diblokir!', { show_alert: true });
+                }
+                return; // Jangan panggil next()
+            }
+
+            // User aktif → simpan ke session
+            ctx.session.user = user;
         } else {
             // Auto-registrasi user baru
             const adminId = process.env.ADMIN_TELEGRAM_ID;

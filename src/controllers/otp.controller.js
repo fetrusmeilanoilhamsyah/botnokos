@@ -77,11 +77,23 @@ const createOrder = async (ctx, serviceCode, price, countryId) => {
 
 /**
  * Polling Background untuk Cek SMS
+ * CATATAN: Interval disimpan di Map global (bukan session Redis)
+ * karena setInterval tidak bisa diserialisasi ke JSON.
  */
+
+// Map global untuk menyimpan interval aktif (key: externalOrderId)
+const activePolls = new Map();
+
 const startSmsPolling = (ctx, externalOrderId, phoneNumber) => {
+    // Cegah polling ganda untuk order yang sama
+    if (activePolls.has(String(externalOrderId))) {
+        logger.warn(`[polling] Polling already active for order ${externalOrderId}`);
+        return;
+    }
+
     let attempts = 0;
-    const maxAttempts = 60;
-    const intervalTime = 5000;
+    const maxAttempts = 40;   // Maks 40 × 8 detik = ~5 menit
+    const intervalTime = 8000; // 8 detik (hemat API quota)
 
     const interval = setInterval(async () => {
         attempts++;
@@ -91,8 +103,9 @@ const startSmsPolling = (ctx, externalOrderId, phoneNumber) => {
 
             if (result.status === 'OK') {
                 clearInterval(interval);
+                activePolls.delete(String(externalOrderId));
                 
-                // Update Database (Sesuai Schema)
+                // Update Database
                 await query(
                     `UPDATE orders SET status = 'completed', otp_code = $1, updated_at = NOW() WHERE order_external_id = $2`,
                     [result.otp, String(externalOrderId)]
@@ -105,7 +118,6 @@ const startSmsPolling = (ctx, externalOrderId, phoneNumber) => {
                     `└ Status: <b>BERHASIL</b>\n\n` +
                     `✅ Kode di atas sudah bisa digunakan.`;
 
-                // Gunakan fallback jika edit gagal (tetap pertahankan warna di keyboard)
                 const keyboard = backToMainMenuKeyboard();
                 return await ctx.editMessageText(text, { 
                     parse_mode: 'HTML', 
@@ -115,11 +127,13 @@ const startSmsPolling = (ctx, externalOrderId, phoneNumber) => {
 
             if (result.status === 'ERROR') {
                 clearInterval(interval);
+                activePolls.delete(String(externalOrderId));
                 await handleRefund(ctx, externalOrderId, 'Terjadi kesalahan pada server provider.');
             }
 
             if (attempts >= maxAttempts) {
                 clearInterval(interval);
+                activePolls.delete(String(externalOrderId));
                 await handleRefund(ctx, externalOrderId, 'Waktu habis, SMS tidak kunjung tiba.');
             }
 
@@ -128,8 +142,10 @@ const startSmsPolling = (ctx, externalOrderId, phoneNumber) => {
         }
     }, intervalTime);
 
-    ctx.session.activeOrderInterval = interval;
+    // Simpan di Map global, BUKAN di session Redis
+    activePolls.set(String(externalOrderId), interval);
 };
+
 
 /**
  * Handle Refund Saldo
@@ -171,5 +187,6 @@ const handleRefund = async (ctx, externalOrderId, reason) => {
 module.exports = {
     createOrder,
     startSmsPolling,
-    handleRefund
+    handleRefund,
+    activePolls,
 };

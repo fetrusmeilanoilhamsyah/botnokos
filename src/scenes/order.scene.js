@@ -187,15 +187,20 @@ orderScene.action(/cancel_order:(.+)/, async (ctx) => {
     try {
         const orderId = ctx.match[1];
         await ctx.answerCbQuery('Membatalkan order...');
-        if (ctx.session.activeOrderInterval) {
-            clearInterval(ctx.session.activeOrderInterval);
-            delete ctx.session.activeOrderInterval;
+
+        // Hentikan polling yang aktif menggunakan Map global (bukan session)
+        const { activePolls } = require('../controllers/otp.controller');
+        if (activePolls.has(String(orderId))) {
+            clearInterval(activePolls.get(String(orderId)));
+            activePolls.delete(String(orderId));
         }
+
         await otpController.handleRefund(ctx, orderId, 'Dibatalkan oleh pengguna.');
         await ctx.scene.enter('start');
     } catch (err) {
         logger.error('[orderScene] cancel error:', err.message);
     }
 });
+
 
 module.exports = { orderScene };

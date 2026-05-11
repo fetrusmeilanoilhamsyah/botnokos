@@ -14,7 +14,7 @@ const dbConfig = {
 
     // Connection pool settings (optimized for 1GB RAM)
     min: parseInt(process.env.DB_POOL_MIN, 10) || 2,
-    max: parseInt(process.env.DB_POOL_MAX, 10) || 10,
+    max: parseInt(process.env.DB_POOL_MAX, 10) || 5,  // 5 cukup untuk VPS 1GB
 
     // Timeouts
     idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT, 10) || 30000,
@@ -35,8 +35,8 @@ pool.on('connect', (client) => {
 });
 
 pool.on('error', (err, client) => {
-    logger.error('❌ Unexpected PostgreSQL pool error:', err);
-    process.exit(-1);
+    // JANGAN process.exit() di sini — hanya log, biarkan pool retry sendiri
+    logger.error('❌ Unexpected PostgreSQL pool error:', err.message);
 });
 
 pool.on('remove', (client) => {
