@@ -30,23 +30,21 @@ topUsersScene.enter(async (ctx) => {
              LIMIT 10`
         );
 
-        let leaderboard = `┌── 🏆 <b>TOP 10 PENGGUNA</b> ──\n`;
-        leaderboard += `├ <i>Berdasarkan total order sukses</i>\n`;
-        leaderboard += `└──────────────────\n\n`;
+        let leaderboard = `<b>Top 10 Pengguna</b>\n`;
+        leaderboard += `<i>Berdasarkan total order sukses</i>\n\n`;
 
         if (result.rows.length === 0) {
             leaderboard += `<i>Belum ada data peringkat.</i>\n`;
         } else {
             result.rows.forEach((row, index) => {
-                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '👤';
-                const name = row.username ? `@${row.username}` : `User_${String(row.telegram_id).slice(-4)}`;
-                leaderboard += `${medal} <b>${index + 1}. ${name}</b>\n`;
-                leaderboard += `└ Order: <code>${row.total_orders}</code> | Spend: <code>${formatCurrency(row.total_spend || 0)}</code>\n\n`;
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+                const name  = row.username ? `@${row.username}` : `User_${String(row.telegram_id).slice(-4)}`;
+                leaderboard += `${medal} <b>${name}</b>\n`;
+                leaderboard += `Order: <code>${row.total_orders}</code>  |  Total: <code>${formatCurrency(row.total_spend || 0)}</code>\n\n`;
             });
         }
 
-        leaderboard += `✨ <i>Terus bertransaksi untuk jadi nomor 1!</i>`;
-
+        leaderboard += `<i>Terus bertransaksi untuk naik peringkat.</i>`;
         const keyboard = backToMainMenuKeyboard();
         await safeEditMessage(ctx, leaderboard, keyboard);
     } catch (err) {

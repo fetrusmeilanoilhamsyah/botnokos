@@ -31,15 +31,13 @@ referralScene.enter(async (ctx) => {
         const { referred_count, referral_bonus_total } = stats.rows[0];
 
         const text = 
-            `┌── 🎁 <b>SISTEM REFERRAL</b> ──\n` +
-            `├ Ajak teman & dapatkan bonus saldo!\n` +
-            `└ <i>Bonus otomatis masuk ke saldo Anda.</i>\n\n` +
-            `📊 <b>STATISTIK PERFORMA ANDA</b>\n` +
-            `👥 Teman Diajak: <b>${referred_count} Orang</b>\n` +
-            `💸 Total Bonus: <b>${formatCurrency(referral_bonus_total || 0)}</b>\n\n` +
-            `💡 <b>Cara Kerja:</b>\n` +
-            `Bagikan link di bawah ini. Anda akan mendapat bonus <b>Rp 100</b> setiap kali teman yang diundang berhasil melakukan <b>Deposit Pertama</b>.\n\n` +
-            `🔗 <b>LINK REFERRAL ANDA</b> (Tap untuk salin):\n` +
+            `<b>Program Referral</b>\n` +
+            `<i>Ajak teman, dapatkan bonus saldo otomatis.</i>\n\n` +
+            `<b>Statistik Anda</b>\n` +
+            `Teman Diajak: <b>${referred_count} orang</b>\n` +
+            `Total Bonus: <b>${formatCurrency(referral_bonus_total || 0)}</b>\n\n` +
+            `Bonus <b>Rp 100</b> masuk otomatis setiap teman yang Anda undang berhasil melakukan deposit pertama.\n\n` +
+            `<b>Link Referral Anda</b> (tap untuk salin):\n` +
             `<code>${referralLink}</code>`;
 
         await safeEditMessage(ctx, text, backToMainMenuKeyboard());

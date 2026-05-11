@@ -29,10 +29,12 @@ const topupScene = new Scenes.BaseScene('topup');
 topupScene.enter(async (ctx) => {
     try {
         const text =
-            `┌── 💰 <b>TOP-UP SALDO</b> ──\n` +
-            `├ Silakan pilih nominal top-up\n` +
-            `└ Saldo otomatis masuk setelah bayar\n\n` +
-            `👇 <b>Pilih nominal di bawah ini:</b>`;
+            `<b>Top-up Saldo</b>
+
+` +
+            `Pilih nominal top-up:
+` +
+            `Saldo akan masuk otomatis setelah pembayaran berhasil.`;
 
         await safeEditMessage(ctx, text, topupAmountKeyboard());
     } catch (err) {
@@ -54,9 +56,9 @@ topupScene.action(/^topup_amount:(\d+)$/, async (ctx) => {
         }
 
         const text =
-            `┌── ✅ <b>KONFIRMASI TOP-UP</b> ──\n` +
-            `├ Nominal: <b>${formatCurrency(amount)}</b>\n` +
-            `└ Metode: <b>QRIS / Bank (Midtrans)</b>\n\n` +
+            `<b>Konfirmasi Top-up</b>\n\n` +
+            `Nominal: <b>${formatCurrency(amount)}</b>\n` +
+            `Metode: QRIS / Transfer Bank (Midtrans)\n\n` +
             `Lanjutkan ke pembayaran?`;
 
         await safeEditMessage(ctx, text, topupConfirmationKeyboard(amount));
@@ -95,11 +97,11 @@ topupScene.action(/^topup_confirm:(\d+)$/, async (ctx) => {
         }, messageId);
 
         const text =
-            `┌── 💳 <b>PEMBAYARAN SIAP</b> ──\n` +
-            `├ Nominal: <b>${formatCurrency(amount)}</b>\n` +
-            `├ Order ID: <code>${result.orderId}</code>\n` +
-            `└ Berlaku: <b>24 Jam</b>\n\n` +
-            `Silakan klik tombol di bawah untuk membayar.`;
+            `<b>Link Pembayaran</b>\n\n` +
+            `Nominal: <b>${formatCurrency(amount)}</b>\n` +
+            `Order ID: <code>${result.orderId}</code>\n` +
+            `Berlaku: 24 jam\n\n` +
+            `Klik tombol di bawah untuk melanjutkan pembayaran.`;
 
         await safeEditMessage(ctx, text, paymentLinkKeyboard(result.redirectUrl));
 
